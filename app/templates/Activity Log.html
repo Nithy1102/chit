@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Activity Log</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f3f3f3;
+    margin: 0;
+}
+
+/* ===============================
+   NAVBAR (STANDARD)
+================================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, #2E73CE, #00C693);
+    color: white;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.brand {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffffff, #e0fffa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links li:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    background: #ff4f4f;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ===============================
+   PAGE
+================================= */
+.log-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 25px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #008c9e;
+    margin-bottom: 10px;
+}
+
+.clear-btn {
+    background: #e03a3a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.clear-btn:hover {
+    opacity: 0.9;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: linear-gradient(90deg, #2E73CE, #00C693);
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-wrapper {
+    max-height: 350px;
+    overflow-y: auto;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
+        <h1 class="brand">RAJESH OPTICALS</h1>
+    </div>
+
+    <ul class="nav-links">
+        <li onclick="location.href='/dashboard'">Home</li>
+        <li onclick="location.href='/patients'">Patient Records</li>
+        <li onclick="location.href='/active'">Activity Log</li>
+        <li id="adminNav" onclick="location.href='/signup'">Admin</li>
+        <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+    </ul>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- CONTENT -->
+<div class="log-container">
+    <h2>User Activity Log</h2>
+
+    <!-- ADMIN ONLY -->
+    <div style="text-align:right; margin-bottom:10px;">
+        <button id="clearLogsBtn" class="clear-btn" onclick="clearLogs()">
+            Clear All Logs
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+/* ===============================
+   SESSION + ROLE CHECK
+================================= */
+async function checkSessionAndRole() {
+    try {
+        const res = await fetch("/api/check_session", {
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (!data.logged_in) {
+            window.location.href = "/login";
+            return;
+        }
+
+        // 🔐 Hide admin-only UI
+        if (data.role !== "admin") {
+            const btn = document.getElementById("clearLogsBtn");
+            const adminNav = document.getElementById("adminNav");
+            const notifyNav = document.getElementById("notifyNav");
+
+            if (btn) btn.style.display = "none";
+            if (adminNav) adminNav.style.display = "none";
+            if (notifyNav) notifyNav.style.display = "none";
+        }
+
+    } catch (err) {
+        window.location.href = "/login";
+    }
+}
+
+/* ===============================
+   LOAD ACTIVITY LOGS
+================================= */
+async function loadLogs() {
+    const res = await fetch("/activities", {
+        credentials: "include"
+    });
+
+    if (!res.ok) {
+        if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+        alert("Failed to load activity logs");
+        return;
+    }
+
+    const logs = await res.json();
+    const tbody = document.getElementById("logTableBody");
+    tbody.innerHTML = "";
+
+    logs.forEach(log => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${log.user_id}</td>
+                <td>${log.status}</td>
+                <td>${log.user_name}</td>
+                <td>${log.time}</td>
+                <td>${log.action || "-"}</td>
+            </tr>
+        `;
+    });
+}
+
+/* ===============================
+   CLEAR LOGS (ADMIN ONLY)
+================================= */
+async function clearLogs() {
+    if (!confirm("Are you sure you want to delete all activity logs?")) return;
+
+    const res = await fetch("/activities/clear", {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    if (!res.ok) {
+        alert("You are not allowed to clear logs");
+        return;
+    }
+
+    loadLogs();
+}
+
+/* ===============================
+   LOGOUT
+================================= */
+async function logout() {
+    await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include"
+    });
+    window.location.href = "/login";
+}
+
+/* ===============================
+   INIT
+================================= */
+checkSessionAndRole();
+loadLogs();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajesh Opticals – User Management</title>
+<link rel="icon" href="{{ url_for('static', filename='logo.jpg') }}">
+
+<style>
+/* ===============================
+   NAVBAR (STANDARD)
+================================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, #2E73CE, #00C693);
+    color: white;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.brand {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffffff, #e0fffa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links li:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    background: #ff4f4f;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ===============================
+   PAGE
+================================= */
+body {
+    margin: 0;
+    background: linear-gradient(135deg, #5583c1, #00C693);
+    font-family: Arial, sans-serif;
+}
+
+.page {
+    padding: 30px;
+}
+
+/* ===============================
+   CONTAINER
+================================= */
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #fff;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.header {
+    text-align: center;
+}
+
+.header img {
+    width: 100px;
+}
+
+h1 {
+    margin: 10px 0 25px;
+}
+
+/* ===============================
+   FORM
+================================= */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+input, select {
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+button {
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #b58600, #e1b600);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.error {
+    color: #d90000;
+    margin-top: 10px;
+}
+
+/* ===============================
+   TABLE
+================================= */
+table {
+    width: 100%;
+    margin-top: 35px;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #00C693;
+    color: white;
+}
+
+.delete-btn {
+    background: #e03a3a;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
+        <h1 class="brand">RAJESH OPTICALS</h1>
+    </div>
+
+    <ul class="nav-links">
+        <li onclick="location.href='/dashboard'">Home</li>
+        <li onclick="location.href='/patients'">Patient Records</li>
+        <li onclick="location.href='/active'">Activity Log</li>
+        <li id="adminNav" onclick="location.href='/signup'">Admin</li>
+        <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+    </ul>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+<div class="container">
+
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo.jpg') }}">
+        <h1>User Signup & Management</h1>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div class="form-grid">
+        <select id="role">
+            <option value="" disabled selected>Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
+        </select>
+
+        <input id="username" placeholder="Username">
+        <input id="phone" placeholder="Mobile Number">
+        <input type="password" id="password" placeholder="Password">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password">
+    </div>
+
+    <button style="margin-top:20px;width:100%" onclick="signupUser()">
+        Create Account
+    </button>
+
+    <div id="errorBox" class="error"></div>
+
+    <!-- USERS TABLE -->
+    <h2 style="margin-top:40px;">Existing Accounts</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+
+</div>
+</div>
+
+<script>
+/* ===============================
+   SESSION + ROLE CHECK
+================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch("/api/check_session", { credentials: "include" });
+    const data = await res.json();
+
+    if (!data.logged_in) {
+        window.location.href = "/login";
+        return;
+    }
+
+    // 🔐 Only admin can access this page
+    if (data.role !== "admin") {
+        alert("Access denied");
+        window.location.href = "/dashboard";
+        return;
+    }
+});
+
+/* ===============================
+   LOGOUT
+================================= */
+async function logout() {
+    await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include"
+    });
+    window.location.href = "/login";
+}
+
+/* ===============================
+   FORM LOGIC (UNCHANGED)
+================================= */
+const roleInput = document.getElementById("role");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const confirmPasswordInput = document.getElementById("confirmPassword");
+const phoneInput = document.getElementById("phone");
+const errorBox = document.getElementById("errorBox");
+
+phoneInput.style.display = "none";
+
+roleInput.addEventListener("change", () => {
+    if (roleInput.value === "admin") {
+        phoneInput.style.display = "block";
+    } else {
+        phoneInput.style.display = "none";
+        phoneInput.value = "";
+    }
+});
+
+async function signupUser() {
+    const role = roleInput.value;
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    const phone = phoneInput.value.trim();
+
+    errorBox.innerText = "";
+
+    if (!role || !username || !password || !confirmPassword) {
+        errorBox.innerText = "All fields are required";
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        errorBox.innerText = "Passwords do not match";
+        return;
+    }
+
+    if (role === "admin" && !phone) {
+        errorBox.innerText = "Mobile number is required for admin";
+        return;
+    }
+
+    const payload = { role, username, password };
+    if (role === "admin") payload.phone = phone;
+
+    const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+        alert("Account created");
+        loadUsers();
+        roleInput.selectedIndex = 0;
+        usernameInput.value = "";
+        passwordInput.value = "";
+        confirmPasswordInput.value = "";
+        phoneInput.value = "";
+        phoneInput.style.display = "none";
+    } else {
+        errorBox.innerText = data.message || "Signup failed";
+    }
+}
+
+async function loadUsers() {
+    const res = await fetch("/api/signup");
+    const users = await res.json();
+
+    const tbody = document.getElementById("userTable");
+    tbody.innerHTML = "";
+
+    users.forEach(u => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${u.id}</td>
+                <td>${u.username}</td>
+                <td>${u.role}</td>
+                <td>
+                    <button class="delete-btn" onclick="deleteUser(${u.id})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function deleteUser(id) {
+    if (!confirm("Delete this account?")) return;
+    await fetch(`/api/signup/${id}`, { method: "DELETE" });
+    loadUsers();
+}
+
+/* INIT */
+loadUsers();
+</script>
+
+</body>
+</html>

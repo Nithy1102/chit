@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajesh Opticals – Login</title>
+<link rel="icon" href="{{ url_for('static', filename='logo.jpg') }}">
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to bottom right, #5583c1, #00C693);
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 400px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 35px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        text-align: center;
+    }
+
+    img {
+        width: 130px;
+        margin-bottom: 10px;
+    }
+
+    h1 {
+        font-size: 26px;
+        margin-bottom: 25px;
+        color: #333;
+    }
+
+       .input-box, .dropdown {
+        width: 90%;
+        padding: 14px;
+        margin: 12px 0;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background-color: #b58600;
+        color: white;
+        font-size: 17px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+    .toggle-link {
+        margin-top: 15px;
+        display: block;
+        font-size: 14px;
+        color: #3719B2;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo">
+    <h1>RAJESH OPTICALS</h1>
+
+    <!-- LOGIN -->
+    <div id="login-box">
+        <select class="dropdown" id="role">
+            <option value="admin">Admin</option>
+            <option value="Staff">Staff</option>
+        </select>
+
+        <input type="text" class="input-box" id="username" placeholder="Username">
+        <input type="password" class="input-box" id="password" placeholder="Password">
+
+        <button class="btn" onclick="loginUser()">Login</button>
+
+        <!-- Enable later -->
+        <span class="toggle-link" style="display:none;">
+            New User? Sign Up
+        </span>
+    </div>
+</div>
+
+<script>
+async function loginUser() {
+    const role = document.getElementById("role").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+        alert("Please enter username and password");
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, password, role })
+        });
+
+        if (res.ok) {
+            window.location.href = "/dashboard";
+        } else {
+            alert("Invalid credentials");
+        }
+    } catch (err) {
+        alert("Server error. Try again.");
+        console.error(err);
+    }
+}
+</script>
+
+</body>
+</html>

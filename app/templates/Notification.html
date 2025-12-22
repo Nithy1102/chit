@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhatsApp Message History</title>
+
+<style>
+/* ===============================
+   NAVBAR (STANDARD)
+================================= */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 30px;
+  background: linear-gradient(90deg, #2E73CE, #00C693);
+  color: white;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 55px;
+  height: 55px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ffffff, #e0fffa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 35px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav-links li {
+  cursor: pointer;
+}
+
+.nav-links li:hover {
+  text-decoration: underline;
+}
+
+.logout-btn {
+  background: #ff4f4f;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ===============================
+   PAGE STYLES
+================================= */
+:root {
+  --muted: #9aa3ad;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Roboto, Arial;
+  background: linear-gradient(135deg, #faf6ff, #f5fbfb);
+  color: #222;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 28px auto;
+  padding: 18px;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* Header inside panel */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.user-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #21c68a, #0d8a5a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+/* Button */
+.clear-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #e03a3a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  opacity: 0.9;
+}
+
+h3 {
+  margin: 0 0 6px;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Message list */
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.message-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+  border-left: 6px solid #15b37b;
+}
+
+.message-title {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0;
+}
+
+pre {
+  background: #f7f8fa;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin-top: 8px;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="logo-section">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
+    <h1 class="brand">RAJESH OPTICALS</h1>
+  </div>
+
+  <ul class="nav-links">
+    <li onclick="location.href='/dashboard'">Home</li>
+    <li onclick="location.href='/patients'">Patient Records</li>
+    <li onclick="location.href='/active'">Activity Log</li>
+    <li id="adminNav" onclick="location.href='/signup'">Admin</li>
+    <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+  </ul>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- PAGE -->
+<div class="wrap">
+  <div class="panel">
+
+    <div class="topbar">
+      <div class="user-info">
+        <div class="avatar" id="userInitial">U</div>
+        <div>
+          <div id="userName" style="font-weight:800">User</div>
+          <div class="lead" id="userPhone">—</div>
+        </div>
+      </div>
+
+      <button id="clearBtn" class="clear-btn" onclick="clearWhatsAppMessages()">
+        Clear Messages
+      </button>
+    </div>
+
+    <h3>WhatsApp Message History</h3>
+    <p class="lead">
+      This page shows the exact WhatsApp messages that were automatically sent by the system.
+    </p>
+
+    <div id="messageHistory" class="message-list">
+      Loading messages…
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===============================
+   SESSION + ROLE
+================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+  const res = await fetch("/api/check_session", { credentials: "include" });
+  const data = await res.json();
+
+  if (!data.logged_in) {
+    window.location.href = "/login";
+    return;
+  }
+
+  // Hide admin-only UI
+  if (data.role !== "admin") {
+    const clearBtn = document.getElementById("clearBtn");
+    const adminNav = document.getElementById("adminNav");
+    const notifyNav = document.getElementById("notifyNav");
+
+    if (clearBtn) clearBtn.style.display = "none";
+    if (adminNav) adminNav.style.display = "none";
+    if (notifyNav) notifyNav.style.display = "none";
+  }
+
+  loadProfile();
+  loadMessages();
+});
+
+/* ===============================
+   LOGOUT
+================================= */
+async function logout() {
+  await fetch("/api/logout", {
+    method: "POST",
+    credentials: "include"
+  });
+  window.location.href = "/login";
+}
+
+/* ===============================
+   WHATSAPP LOGIC (UNCHANGED)
+================================= */
+const MESSAGE_API = "/api/admin/whatsapp-messages";
+const PROFILE_API = "/api/admin/profile";
+
+function setHeader(user) {
+  document.getElementById("userName").textContent = user?.username || "User";
+  document.getElementById("userPhone").textContent = user?.phone || "—";
+  document.getElementById("userInitial").textContent =
+    (user?.username || "U").slice(0, 2).toUpperCase();
+}
+
+async function clearWhatsAppMessages() {
+  if (!confirm("Clear all WhatsApp message history?")) return;
+
+  const res = await fetch("/api/admin/whatsapp-messages/clear", {
+    method: "DELETE",
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    alert("Not allowed");
+    return;
+  }
+
+  loadMessages();
+}
+
+async function loadProfile() {
+  try {
+    const res = await fetch(PROFILE_API, { credentials: "include" });
+    if (!res.ok) return;
+    const user = await res.json();
+    setHeader(user);
+  } catch {}
+}
+
+async function loadMessages() {
+  const container = document.getElementById("messageHistory");
+  container.innerHTML = "Loading…";
+
+  try {
+    const res = await fetch(MESSAGE_API, { credentials: "include" });
+    if (!res.ok) throw new Error();
+
+    const messages = await res.json();
+
+    if (!messages.length) {
+      container.innerHTML =
+        "<div class='empty'>No WhatsApp messages have been sent yet.</div>";
+      return;
+    }
+
+    container.innerHTML = "";
+    messages.forEach(m => {
+      const div = document.createElement("div");
+      div.className = "message-item";
+      div.innerHTML = `
+        <div class="message-title">${m.event}</div>
+        <div class="meta">
+          To: ${m.phone} • ${new Date(m.sent_at).toLocaleString()}
+        </div>
+        <pre>${m.message}</pre>
+      `;
+      container.appendChild(div);
+    });
+
+  } catch {
+    container.innerHTML =
+      "<div class='empty'>Failed to load WhatsApp message history.</div>";
+  }
+}
+</script>
+
+</body>
+</html>

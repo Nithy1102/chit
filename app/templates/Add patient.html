@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add New Patient</title>
+
+<style>
+/* ===============================
+   NAVBAR
+================================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, #2E73CE, #00C693);
+    color: white;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.brand {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffffff, #e0fffa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links li:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    background: #ff4f4f;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ===============================
+   PAGE LAYOUT (FIXED)
+================================= */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0099cc, #00c6a7);
+    min-height: 100vh;
+}
+
+.page {
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+}
+
+/* ===============================
+   FORM CONTAINER
+================================= */
+.container {
+    width: 80%;
+    max-width: 1200px;
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 25px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: #0d8a5a;
+    font-size: 18px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+}
+
+input,
+select,
+textarea {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+}
+
+textarea {
+    min-height: 90px;
+}
+
+.buttons {
+    text-align: right;
+    margin-top: 25px;
+}
+
+.add-btn {
+    background: #0d8a5a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    padding: 8px 18px;
+    border: 1px solid #333;
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ===============================
+   CHECKBOX DROPDOWN
+================================= */
+.checkbox-dropdown {
+    position: relative;
+    width: 300px;
+}
+
+.checkbox-dropdown-button {
+    padding: 12px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.checkbox-list {
+    display: none;
+    position: absolute;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    z-index: 10;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
+        <h1 class="brand">RAJESH OPTICALS</h1>
+    </div>
+
+    <ul class="nav-links">
+        <li onclick="location.href='/dashboard'">Home</li>
+        <li onclick="location.href='/patients'">Patient Records</li>
+        <li onclick="location.href='/active'">Activity Log</li>
+        <li id="adminNav" onclick="location.href='/signup'">Admin</li>
+        <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+    </ul>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+<div class="container">
+
+<h2>ADD NEW PATIENT</h2>
+
+<!-- BASIC -->
+<div class="section-title">BASIC INFORMATION</div>
+<div class="grid">
+    <div>
+        <label>Branch *</label>
+        <select id="branch">
+            <option value="" disabled selected>Select branch</option>
+            <option value="Tirupattur">Tirupattur</option>
+            <option value="Uthangarai">Uthangarai</option>
+        </select>
+    </div>
+    <div><label>Full Name *</label><input id="fullName"></div>
+    <div><label>Age *</label><input type="number" id="age"></div>
+    <div>
+        <label>Gender *</label>
+        <select id="gender">
+            <option value="" disabled selected>Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+    </div>
+    <div><label>Contact *</label><input id="phone"></div>
+    <div><label>Email</label><input id="email"></div>
+    <div><label>Address</label><input id="address"></div>
+</div>
+
+<!-- RIGHT EYE -->
+<div class="section-title">RIGHT EYE (OD)</div>
+<div class="grid-4">
+    <input id="sph_od" placeholder="SPH">
+    <input id="cyl_od" placeholder="CYL">
+    <input id="axis_od" placeholder="AXIS">
+    <input id="add_od" placeholder="ADD">
+</div>
+
+<!-- LEFT EYE -->
+<div class="section-title">LEFT EYE (OS)</div>
+<div class="grid-4">
+    <input id="sph_os" placeholder="SPH">
+    <input id="cyl_os" placeholder="CYL">
+    <input id="axis_os" placeholder="AXIS">
+    <input id="add_os" placeholder="ADD">
+</div>
+
+<!-- VISION -->
+<div class="section-title">VISION</div>
+<div class="grid">
+    <input id="vision_od" placeholder="Vision OD">
+    <input id="vision_os" placeholder="Vision OS">
+    <input id="pd" placeholder="PD">
+</div>
+
+<!-- EYEWEAR -->
+<div class="section-title">EYEWEAR</div>
+<div class="grid">
+    <select id="frameType">
+        <option value="" disabled selected>Frame Type</option>
+        <option>Full-rim</option>
+        <option>Semi-rimless</option>
+        <option>Rimless</option>
+    </select>
+
+    <select id="lensType">
+        <option value="" disabled selected>Lens Type</option>
+        <option>Single Vision</option>
+        <option>Bifocal</option>
+        <option>Progressive</option>
+    </select>
+
+    <div class="checkbox-dropdown">
+        <div class="checkbox-dropdown-button" onclick="toggleCoatings()">Select Coatings</div>
+        <div class="checkbox-list" id="coatingList">
+            <div class="checkbox-grid">
+                <label><input type="checkbox" value="Crizal"> Crizal</label>
+                <label><input type="checkbox" value="Blue Block"> Blue Block</label>
+                <label><input type="checkbox" value="Prevencia"> Prevencia</label>
+                <label><input type="checkbox" value="ARC"> ARC</label>
+                <label><input type="checkbox" value="Hindex"> Hindex</label>
+                <label><input type="checkbox" value="Kodak"> Kodak</label>
+            </div>
+        </div>
+    </div>
+
+    <input id="contactLens" placeholder="Contact Lens Type">
+</div>
+
+<!-- ADDITIONAL -->
+<div class="section-title">ADDITIONAL</div>
+<textarea id="systemicHistory" placeholder="Systemic History"></textarea>
+<textarea id="ocularHistory" placeholder="Ocular History"></textarea>
+<textarea id="eyeConditions" placeholder="Eye Conditions"></textarea>
+<textarea id="notes" placeholder="Notes"></textarea>
+<input type="date" id="nextAppointment">
+
+<!-- PAYMENT -->
+<div class="section-title">PAYMENT</div>
+<div class="grid">
+    <input type="number" id="total" placeholder="Total">
+    <input type="number" id="advance" placeholder="Advance">
+    <input type="number" id="remaining" placeholder="Remaining" readonly>
+</div>
+
+<div class="buttons">
+    <button class="cancel-btn" onclick="history.back()">Cancel</button>
+    <button class="add-btn" onclick="savePatient()">Save Patient</button>
+</div>
+
+</div>
+</div>
+
+<script>
+/* UI + SESSION + LOGIC (UNCHANGED) */
+
+function toggleCoatings() {
+    const list = document.getElementById("coatingList");
+    list.style.display = list.style.display === "block" ? "none" : "block";
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch("/api/check_session", { credentials: "include" });
+    const data = await res.json();
+
+    if (!data.logged_in) {
+        window.location.href = "/login";
+        return;
+    }
+
+    if (data.role !== "admin") {
+        adminNav.style.display = "none";
+        notifyNav.style.display = "none";
+    }
+});
+
+async function logout() {
+    await fetch("/api/logout", { method: "POST", credentials: "include" });
+    window.location.href = "/login";
+}
+</script>
+
+</body>
+</html>

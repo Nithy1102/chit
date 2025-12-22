@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+/* FIXED BACKGROUND */
+body{
+    height:100vh;
+    width:100vw;
+    overflow-y:auto;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:40px 10px;
+
+    background:linear-gradient(to bottom right,#5583c1,#00C693);
+    background-attachment:fixed;     /* 🔥 STOPS FLOATING */
+}
+
+/* CENTER WHITE BOX */
+.container{
+    width:95%;
+    max-width:850px;
+    padding:10px;
+}
+
+/* SECTIONS STYLES */
+.section{
+    background:#fff;
+    padding:22px;
+    margin-bottom:25px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+/* HEADINGS */
+.section h2{
+    font-size:22px;
+    margin-bottom:18px;
+    color:#007b83;
+    font-weight:700;
+}
+
+/* PROFILE SECTION */
+.profile-box{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    position:relative;
+    margin-bottom:20px;
+}
+
+.profile-img{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #cfcfcf;
+}
+
+/* EDIT ICON */
+.edit-icon{
+    position:absolute;
+    left:85px;
+    bottom:5px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:#007b83;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:18px;
+    cursor:pointer;
+}
+
+/* INPUTS */
+label{
+    font-weight:600;
+    margin-bottom:5px;
+    display:block;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-bottom:12px;
+}
+
+/* BUTTONS */
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    background:#007b83;
+    color:#fff;
+    cursor:pointer;
+}
+button:hover{opacity:.85;}
+
+.row{
+    display:flex;
+    gap:20px;
+}
+.row div{flex:1;}
+
+.branch-card{
+    padding:15px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    background:#f9f9f9;
+    margin-top:12px;
+}
+
+.branch-actions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.edit-btn{
+    background:#ffc107;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+}
+
+/* MOBILE FIX */
+@media(max-width:600px){
+    .row{flex-direction:column;}
+    .profile-box{flex-direction:column;}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ADMIN PROFILE -->
+    <div class="section">
+        <h2>Admin Profile</h2>
+
+        <div class="profile-box">
+            <img id="profileImg" src="https://via.placeholder.com/120" class="profile-img">
+
+            <div class="edit-icon" onclick="document.getElementById('fileInput').click()">✎</div>
+            <input type="file" id="fileInput" accept="image/*" style="display:none">
+        </div>
+
+        <label>Name</label>
+        <input id="adminName">
+
+        <label>Phone Number</label>
+        <input id="adminPhone">
+
+        <label>Email</label>
+        <input id="adminEmail">
+
+        <label>Username</label>
+        <input id="adminUsername">
+
+        <button onclick="saveAdmin()">Save Profile</button>
+    </div>
+
+
+
+    <!-- BRANCH SECTION -->
+    <div class="section">
+        <h2>Branch Settings</h2>
+
+        <label>Branch Name</label>
+        <input id="branchName">
+
+        <label>Branch Address 1</label>
+        <input id="branchAddress1">
+
+        <label>Branch Address 2</label>
+        <input id="branchAddress2">
+
+        <label>Branch Phone</label>
+        <input id="branchPhone">
+
+        <button onclick="addBranch()">Add Branch</button>
+
+        <h3 style="margin-top:20px;">Saved Branches</h3>
+        <div id="branchList"></div>
+    </div>
+
+</div>
+
+
+<script>
+/* LOAD ADMIN PROFILE */
+window.onload = ()=>{
+    let sign = JSON.parse(localStorage.getItem("signupData"));
+    if(sign){
+        adminName.value = sign.fullname;
+        adminPhone.value = sign.phone;
+        adminEmail.value = sign.email;
+        adminUsername.value = sign.username;
+    }
+
+    let data = JSON.parse(localStorage.getItem("adminProfile"));
+    if(data){
+        adminName.value = data.name;
+        adminPhone.value = data.phone;
+        adminEmail.value = data.email;
+        adminUsername.value = data.username;
+        if(data.photo) profileImg.src = data.photo;
+    }
+
+    loadBranches();
+};
+
+/* PHOTO UPLOAD */
+fileInput.addEventListener("change", e=>{
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => profileImg.src = ev.target.result;
+    reader.readAsDataURL(file);
+});
+
+/* SAVE ADMIN */
+function saveAdmin(){
+    let admin = {
+        name: adminName.value,
+        phone: adminPhone.value,
+        email: adminEmail.value,
+        username: adminUsername.value,
+        photo: profileImg.src
+    };
+    localStorage.setItem("adminProfile", JSON.stringify(admin));
+    alert("Profile Updated!");
+}
+
+/* ADD BRANCH */
+function addBranch(){
+    let list = JSON.parse(localStorage.getItem("branches")) || [];
+
+    list.push({
+        id: Date.now(),
+        name: branchName.value,
+        address1: branchAddress1.value,
+        address2: branchAddress2.value,
+        phone: branchPhone.value
+    });
+
+    localStorage.setItem("branches", JSON.stringify(list));
+    branchName.value = "";
+    branchAddress1.value = "";
+    branchAddress2.value = "";
+    branchPhone.value = "";
+    loadBranches();
+}
+
+/* LOAD BRANCHES */
+function loadBranches(){
+    let list = JSON.parse(localStorage.getItem("branches")) || [];
+    let html = "";
+
+    list.forEach(b=>{
+        html += `
+        <div class="branch-card">
+            <h3>${b.name}</h3>
+            <p>${b.address1}</p>
+            <p>${b.address2}</p>
+            <p>📞 ${b.phone}</p>
+
+            <div class="branch-actions">
+                <button class="edit-btn" onclick="editBranch(${b.id})">Edit</button>
+                <button class="delete-btn" onclick="deleteBranch(${b.id})">Delete</button>
+            </div>
+        </div>`;
+    });
+
+    branchList.innerHTML = html;
+}
+
+/* DELETE BRANCH */
+function deleteBranch(id){
+    let list = JSON.parse(localStorage.getItem("branches")) || [];
+    list = list.filter(x=>x.id!==id);
+    localStorage.setItem("branches", JSON.stringify(list));
+    loadBranches();
+}
+
+/* EDIT BRANCH */
+function editBranch(id){
+    let list = JSON.parse(localStorage.getItem("branches")) || [];
+    let b = list.find(x=>x.id===id);
+
+    branchName.value = b.name;
+    branchAddress1.value = b.address1;
+    branchAddress2.value = b.address2;
+    branchPhone.value = b.phone;
+
+    deleteBranch(id);
+}
+</script>
+
+</body>
+</html>

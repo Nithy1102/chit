@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patient Records</title>
+
+<style>
+/* ===============================
+   NAVBAR (STANDARD)
+================================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, #2E73CE, #00C693);
+    color: white;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.brand {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffffff, #e0fffa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links li:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    background: #ff4f4f;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ===============================
+   PAGE
+================================= */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef3f9;
+}
+
+.top-bar {
+    background: linear-gradient(90deg, #1e66d1, #00c7a3);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.top-bar input,
+.top-bar select {
+    padding: 12px;
+    width: 260px;
+    border-radius: 8px;
+    border: none;
+}
+
+.top-bar button {
+    padding: 12px 26px;
+    background: #ffa500;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.container {
+    width: 90%;
+    margin: 20px auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #0099cc;
+    color: white;
+}
+
+.action {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.view-btn { background: #22b14c; }
+.edit-btn { background: #f39c12; }
+.delete-btn { background: #e03a3a; }
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
+        <h1 class="brand">RAJESH OPTICALS</h1>
+    </div>
+
+    <ul class="nav-links">
+        <li onclick="location.href='/dashboard'">Home</li>
+        <li onclick="location.href='/patients'">Patient Records</li>
+        <li onclick="location.href='/active'">Activity Log</li>
+        <li id="adminNav" onclick="location.href='/signup'">Admin</li>
+        <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+    </ul>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- FILTER BAR -->
+<div class="top-bar">
+    <input id="searchText" placeholder="Search name or phone">
+    <select id="branchFilter">
+        <option value="">All Branches</option>
+        <option value="Tirupattur">Tirupattur</option>
+        <option value="Uthangarai">Uthangarai</option>
+    </select>
+    <button onclick="applyFilter()">Search</button>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+    <h2>Patient Records</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Branch</th>
+            <th>Remaining</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="recordBody"></tbody>
+    </table>
+</div>
+
+<script>
+/* ===============================
+   SESSION + ROLE CHECK
+================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch("/api/check_session", { credentials: "include" });
+    const data = await res.json();
+
+    if (!data.logged_in) {
+        window.location.href = "/login";
+        return;
+    }
+
+    if (data.role !== "admin") {
+        const adminNav = document.getElementById("adminNav");
+        const notifyNav = document.getElementById("notifyNav");
+
+        if (adminNav) adminNav.style.display = "none";
+        if (notifyNav) notifyNav.style.display = "none";
+    }
+});
+
+/* ===============================
+   LOGOUT
+================================= */
+async function logout() {
+    await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include"
+    });
+    window.location.href = "/login";
+}
+
+/* ===============================
+   PATIENT LOGIC (UNCHANGED)
+================================= */
+let patients = [];
+
+async function loadRecords(filtered = null) {
+    if (!patients.length) {
+        const res = await fetch("/api/patients");
+        patients = await res.json();
+    }
+
+    const list = filtered || patients;
+    const tbody = document.getElementById("recordBody");
+    tbody.innerHTML = "";
+
+    list.forEach(p => {
+        tbody.innerHTML += `
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.phone || ""}</td>
+            <td>${p.branch || ""}</td>
+            <td>${p.remaining ?? 0}</td>
+            <td>
+                <button class="action view-btn" onclick="viewPatient(${p.id})">View</button>
+                <button class="action edit-btn" onclick="editPatient(${p.id})">Edit</button>
+                <button class="action delete-btn" onclick="deletePatient(${p.id})">Delete</button>
+            </td>
+        </tr>`;
+    });
+}
+
+function applyFilter() {
+    const text = searchText.value.toLowerCase();
+    const branch = branchFilter.value;
+
+    const filtered = patients.filter(p => {
+        const matchText =
+            p.name.toLowerCase().includes(text) ||
+            (p.phone && p.phone.includes(text));
+
+        const matchBranch = !branch || p.branch === branch;
+        return matchText && matchBranch;
+    });
+
+    loadRecords(filtered);
+}
+
+function viewPatient(id) {
+    location.href = `/add-patient-page?id=${id}`;
+}
+
+function editPatient(id) {
+    location.href = `/add-patient-page?id=${id}`;
+}
+
+async function deletePatient(id) {
+    if (!confirm("Delete this patient?")) return;
+
+    const res = await fetch(`/delete-patient/${id}`, { method: "DELETE" });
+    const data = await res.json();
+
+    if (data.status === "success") {
+        patients = patients.filter(p => p.id !== id);
+        loadRecords();
+        alert("Deleted successfully");
+    } else {
+        alert("Delete failed");
+    }
+}
+
+// Initial load
+loadRecords();
+</script>
+
+</body>
+</html>

@@ -2,4 +2,4 @@ Flask
 Flask-Cors
 Flask-SQLAlchemy
 Werkzeug
-guicorn
+gunicorn

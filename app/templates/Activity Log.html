@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Activity Log</title>
 
 <style>
+/* ===============================
+   BASE
+================================= */
 body {
     font-family: Arial, sans-serif;
     background: #f3f3f3;
@@ -12,7 +16,7 @@ body {
 }
 
 /* ===============================
-   NAVBAR (STANDARD)
+   NAVBAR
 ================================= */
 .navbar {
     display: flex;
@@ -21,6 +25,7 @@ body {
     padding: 12px 30px;
     background: linear-gradient(90deg, #2E73CE, #00C693);
     color: white;
+    position: relative;
 }
 
 .logo-section {
@@ -49,15 +54,10 @@ body {
     list-style: none;
     gap: 35px;
     font-size: 16px;
-    font-weight: 500;
 }
 
 .nav-links li {
     cursor: pointer;
-}
-
-.nav-links li:hover {
-    text-decoration: underline;
 }
 
 .logout-btn {
@@ -66,7 +66,12 @@ body {
     border: none;
     padding: 10px 22px;
     border-radius: 8px;
-    font-size: 16px;
+    cursor: pointer;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 26px;
     cursor: pointer;
 }
 
@@ -74,19 +79,18 @@ body {
    PAGE
 ================================= */
 .log-container {
-    width: 90%;
+    width: 95%;
     max-width: 900px;
     margin: 25px auto;
     background: white;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
 }
 
 h2 {
     text-align: center;
     color: #008c9e;
-    margin-bottom: 10px;
 }
 
 .clear-btn {
@@ -98,10 +102,9 @@ h2 {
     cursor: pointer;
 }
 
-.clear-btn:hover {
-    opacity: 0.9;
-}
-
+/* ===============================
+   TABLE (DESKTOP)
+================================= */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -120,70 +123,169 @@ td {
     border-bottom: 1px solid #e0e0e0;
 }
 
-.table-wrapper {
-    max-height: 350px;
-    overflow-y: auto;
+/* ===============================
+   MOBILE NAVBAR
+================================= */
+@media (max-width: 900px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 75px;
+        right: 20px;
+        background: linear-gradient(90deg, #2E73CE, #00C693);
+        flex-direction: column;
+        gap: 18px;
+        padding: 20px;
+        border-radius: 12px;
+        display: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        z-index: 100;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
+
+    .logout-btn {
+        display: none;
+    }
+}
+
+/* ===============================
+   MOBILE TABLE → CARD VIEW
+================================= */
+@media (max-width: 600px) {
+    thead {
+        display: none;
+    }
+
+    table, tbody, tr, td {
+        display: block;
+        width: 100%;
+    }
+
+    tr {
+        margin-bottom: 12px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        font-size: 13px;
+        border-bottom: 1px solid #eee;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
+    }
+}
+
+/* ===============================
+   MOBILE CONTAINER FIX
+================================= */
+@media (max-width: 600px) {
+    .log-container {
+        width: 100%;
+        margin: 10px auto;
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .clear-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .brand {
+        font-size: 16px;
+    }
+
+    .logo {
+        width: 45px;
+        height: 45px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
+<!-- ===============================
+     NAVBAR
+================================= -->
 <nav class="navbar">
     <div class="logo-section">
         <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
         <h1 class="brand">RAJESH OPTICALS</h1>
     </div>
 
-    <ul class="nav-links">
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+    <ul class="nav-links" id="navMenu">
         <li onclick="location.href='/dashboard'">Home</li>
         <li onclick="location.href='/patients'">Patient Records</li>
         <li onclick="location.href='/active'">Activity Log</li>
         <li id="adminNav" onclick="location.href='/signup'">Admin</li>
         <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+        <li onclick="logout()">Logout</li>
     </ul>
 
     <button class="logout-btn" onclick="logout()">Logout</button>
 </nav>
 
-<!-- CONTENT -->
+<!-- ===============================
+     CONTENT
+================================= -->
 <div class="log-container">
     <h2>User Activity Log</h2>
 
-    <!-- ADMIN ONLY -->
     <div style="text-align:right; margin-bottom:10px;">
-        <button id="clearLogsBtn" class="clear-btn" onclick="clearLogs()">
-            Clear All Logs
-        </button>
+        <button id="clearLogsBtn" class="clear-btn" onclick="clearLogs()">Clear All Logs</button>
     </div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Status</th>
-                    <th>Name</th>
-                    <th>Time</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="logTableBody"></tbody>
-        </table>
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+    </table>
 </div>
 
+<!-- ===============================
+     SCRIPT
+================================= -->
 <script>
-/* ===============================
-   SESSION + ROLE CHECK
-================================= */
+function toggleMenu() {
+    document.getElementById("navMenu").classList.toggle("show");
+}
+
 async function checkSessionAndRole() {
     try {
-        const res = await fetch("/api/check_session", {
-            credentials: "include"
-        });
-
+        const res = await fetch("/api/check_session", { credentials: "include" });
         const data = await res.json();
 
         if (!data.logged_in) {
@@ -191,38 +293,19 @@ async function checkSessionAndRole() {
             return;
         }
 
-        // 🔐 Hide admin-only UI
         if (data.role !== "admin") {
-            const btn = document.getElementById("clearLogsBtn");
-            const adminNav = document.getElementById("adminNav");
-            const notifyNav = document.getElementById("notifyNav");
-
-            if (btn) btn.style.display = "none";
-            if (adminNav) adminNav.style.display = "none";
-            if (notifyNav) notifyNav.style.display = "none";
+            document.getElementById("clearLogsBtn")?.remove();
+            document.getElementById("adminNav")?.remove();
+            document.getElementById("notifyNav")?.remove();
         }
-
-    } catch (err) {
+    } catch {
         window.location.href = "/login";
     }
 }
 
-/* ===============================
-   LOAD ACTIVITY LOGS
-================================= */
 async function loadLogs() {
-    const res = await fetch("/activities", {
-        credentials: "include"
-    });
-
-    if (!res.ok) {
-        if (res.status === 401) {
-            window.location.href = "/login";
-            return;
-        }
-        alert("Failed to load activity logs");
-        return;
-    }
+    const res = await fetch("/activities", { credentials: "include" });
+    if (!res.ok) return;
 
     const logs = await res.json();
     const tbody = document.getElementById("logTableBody");
@@ -231,49 +314,27 @@ async function loadLogs() {
     logs.forEach(log => {
         tbody.innerHTML += `
             <tr>
-                <td>${log.user_id}</td>
-                <td>${log.status}</td>
-                <td>${log.user_name}</td>
-                <td>${log.time}</td>
-                <td>${log.action || "-"}</td>
+                <td data-label="User ID">${log.user_id}</td>
+                <td data-label="Status">${log.status}</td>
+                <td data-label="Name">${log.user_name}</td>
+                <td data-label="Time">${log.time}</td>
+                <td data-label="Action">${log.action || "-"}</td>
             </tr>
         `;
     });
 }
 
-/* ===============================
-   CLEAR LOGS (ADMIN ONLY)
-================================= */
 async function clearLogs() {
-    if (!confirm("Are you sure you want to delete all activity logs?")) return;
-
-    const res = await fetch("/activities/clear", {
-        method: "DELETE",
-        credentials: "include"
-    });
-
-    if (!res.ok) {
-        alert("You are not allowed to clear logs");
-        return;
-    }
-
+    if (!confirm("Delete all logs?")) return;
+    await fetch("/activities/clear", { method: "DELETE", credentials: "include" });
     loadLogs();
 }
 
-/* ===============================
-   LOGOUT
-================================= */
 async function logout() {
-    await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include"
-    });
+    await fetch("/api/logout", { method: "POST", credentials: "include" });
     window.location.href = "/login";
 }
 
-/* ===============================
-   INIT
-================================= */
 checkSessionAndRole();
 loadLogs();
 </script>

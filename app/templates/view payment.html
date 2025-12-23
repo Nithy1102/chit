@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payment Records</title>
 
 <style>
@@ -12,9 +13,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 30px;
+    padding: 8px 20px;
+    height: 64px;
     background: linear-gradient(90deg, #2E73CE, #00C693);
     color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 2000;
+    box-sizing: border-box;
 }
 
 .logo-section {
@@ -24,26 +31,62 @@
 }
 
 .logo {
-    width: 55px;
-    height: 55px;
-    border-radius: 12px;
-    object-fit: cover;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
 }
 
 .brand {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
-    background: linear-gradient(90deg, #ffffff, #e0fffa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 26px;
+    cursor: pointer;
 }
 
 .nav-links {
-    display: flex;
     list-style: none;
     gap: 35px;
     font-size: 16px;
     font-weight: 500;
+}
+
+/* DESKTOP */
+@media (min-width: 901px) {
+    .nav-links {
+        display: flex;
+    }
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+    .menu-toggle {
+        display: block;
+        z-index: 3000;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 64px;
+        right: 10px;
+        width: 220px;
+        background: linear-gradient(180deg, #2E73CE, #00C693);
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        display: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        z-index: 2500;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
 }
 
 .nav-links li {
@@ -58,25 +101,33 @@
     background: #ff4f4f;
     color: white;
     border: none;
-    padding: 10px 22px;
+    padding: 10px 18px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
+}
+
+/* hide desktop logout on mobile */
+@media (max-width: 900px) {
+    .logout-btn {
+        display: none;
+    }
 }
 
 /* ===============================
    PAGE
 ================================= */
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
+    font-family: Arial, sans-serif;
     background: #f5f5f5;
+    padding-top: 90px;
 }
 
 .page {
     display: flex;
     justify-content: center;
-    padding: 30px 0;
+    padding: 20px;
 }
 
 .container {
@@ -91,6 +142,7 @@ body {
 h2 {
     margin-top: 0;
     color: #0d67b5;
+    text-align: center;
 }
 
 /* ===============================
@@ -118,13 +170,25 @@ h2 {
     cursor: pointer;
 }
 
+/* mobile search */
+@media (max-width: 600px) {
+    .search-box {
+        flex-direction: column;
+    }
+}
+
 /* ===============================
    TABLE
 ================================= */
+.table-wrapper {
+    overflow-x: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    min-width: 600px;
 }
 
 table th,
@@ -157,12 +221,15 @@ table th {
         <h1 class="brand">RAJESH OPTICALS</h1>
     </div>
 
-    <ul class="nav-links">
+    <div class="menu-toggle" id="menuToggle">☰</div>
+
+    <ul class="nav-links" id="navMenu">
         <li onclick="location.href='/dashboard'">Home</li>
         <li onclick="location.href='/patients'">Patient Records</li>
         <li onclick="location.href='/active'">Activity Log</li>
         <li id="adminNav" onclick="location.href='/signup'">Admin</li>
         <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+        <li onclick="logout()">Logout</li>
     </ul>
 
     <button class="logout-btn" onclick="logout()">Logout</button>
@@ -179,17 +246,19 @@ table th {
         <button onclick="searchPatient()">Search</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Patient Name</th>
-                <th>Branch</th>
-                <th>Date</th>
-                <th>Amount Paid</th>
-            </tr>
-        </thead>
-        <tbody id="paymentTable"></tbody>
-    </table>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Branch</th>
+                    <th>Date</th>
+                    <th>Amount Paid</th>
+                </tr>
+            </thead>
+            <tbody id="paymentTable"></tbody>
+        </table>
+    </div>
 
     <div class="total-box" id="totalAmount">
         Total Amount: ₹0
@@ -199,6 +268,20 @@ table th {
 </div>
 
 <script>
+/* ===============================
+   NAVBAR TOGGLE
+================================= */
+document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("menuToggle");
+    const menu = document.getElementById("navMenu");
+
+    if (toggleBtn && menu) {
+        toggleBtn.addEventListener("click", () => {
+            menu.classList.toggle("show");
+        });
+    }
+});
+
 /* ===============================
    SESSION CHECK + ROLE
 ================================= */
@@ -229,7 +312,7 @@ async function logout() {
 }
 
 /* ===============================
-   PAYMENTS LOGIC (UNCHANGED)
+   PAYMENTS LOGIC
 ================================= */
 let payments = [];
 

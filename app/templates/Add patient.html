@@ -6,16 +6,20 @@
 <title>Add New Patient</title>
 
 <style>
-/* ===============================
-   NAVBAR
-================================= */
+/* ================= NAVBAR ================= */
 .navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 30px;
+    padding: 8px 20px;              /* ⬅ reduced */
+    height: 64px;                   /* ⬅ fixed height */
     background: linear-gradient(90deg, #2E73CE, #00C693);
     color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 2000;                  /* ⬅ IMPORTANT */
+    box-sizing: border-box;
 }
 
 .logo-section {
@@ -25,18 +29,12 @@
 }
 
 .logo {
-    width: 55px;
-    height: 55px;
-    border-radius: 12px;
-    object-fit: cover;
+    width: 42px;
+    height: 42px;
 }
 
 .brand {
-    font-size: 20px;
-    font-weight: 700;
-    background: linear-gradient(90deg, #ffffff, #e0fffa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 16px;
 }
 
 .nav-links {
@@ -65,25 +63,59 @@
     cursor: pointer;
 }
 
-/* ===============================
-   PAGE LAYOUT (FIXED)
-================================= */
+.menu-toggle {
+    display: none;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+/* ===== MOBILE NAV ===== */
+@media (max-width: 900px) {
+
+    .menu-toggle {
+        display: block;
+        font-size: 26px;
+        cursor: pointer;
+        z-index: 3001;              /* 🔥 ABOVE EVERYTHING */
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 64px;
+        right: 12px;
+        width: 220px;               /* ❌ NOT 100% */
+        background: linear-gradient(180deg, #2E73CE, #00C693);
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        display: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        z-index: 3000;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
+
+    .logout-btn {
+        display: none;
+    }
+}
+.navbar {
+    pointer-events: auto;
+}
+
+
+/* ================= PAGE ================= */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #0099cc, #00c6a7);
     min-height: 100vh;
+    padding-top: 110px;
 }
 
-.page {
-    display: flex;
-    justify-content: center;
-    padding-top: 40px;
-}
-
-/* ===============================
-   FORM CONTAINER
-================================= */
 .container {
     width: 80%;
     max-width: 1200px;
@@ -91,11 +123,10 @@ body {
     padding: 30px 40px;
     border-radius: 12px;
     box-shadow: 0px 6px 25px rgba(0,0,0,0.1);
+    margin: auto;
 }
 
-h2 {
-    margin-bottom: 20px;
-}
+h2 { margin-bottom: 20px; }
 
 .section-title {
     font-weight: bold;
@@ -105,6 +136,7 @@ h2 {
     font-size: 18px;
 }
 
+/* ===== FORMS ===== */
 .grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -123,18 +155,15 @@ label {
     display: block;
 }
 
-input,
-select,
-textarea {
-    width: 80%;
+input, select, textarea {
+    width: 100%;
     padding: 10px;
     border: 1px solid #dcdcdc;
     border-radius: 5px;
+    box-sizing: border-box;
 }
 
-textarea {
-    min-height: 90px;
-}
+textarea { min-height: 90px; }
 
 .buttons {
     text-align: right;
@@ -142,28 +171,26 @@ textarea {
 }
 
 .add-btn {
-    background: #0d8a5a;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
+    background:#0d8a5a;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
 }
 
 .cancel-btn {
-    padding: 8px 18px;
-    border: 1px solid #333;
-    background: #fff;
-    border-radius: 5px;
-    cursor: pointer;
+    padding:8px 18px;
+    border:1px solid #333;
+    background:#fff;
+    border-radius:5px;
+    cursor:pointer;
 }
 
-/* ===============================
-   CHECKBOX DROPDOWN
-================================= */
+/* ===== CHECKBOX DROPDOWN ===== */
 .checkbox-dropdown {
     position: relative;
-    width: 300px;
+    width: 100%;
 }
 
 .checkbox-dropdown-button {
@@ -189,33 +216,101 @@ textarea {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
+
+/* ================= MOBILE RESPONSIVE ================= */
+/* ================= MOBILE NAVBAR FIX ================= */
+@media (max-width: 600px) {
+
+    /* NAVBAR */
+    .navbar {
+        padding: 0 14px;
+        height: 60px;
+        align-items: center;
+    }
+
+    .logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .brand {
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+    }
+
+    .nav-links {
+        top: 60px;
+        right: 10px;
+        width: 220px;
+    }
+
+    /* PAGE */
+    body {
+        padding-top: 80px;
+    }
+
+    .container {
+        width: 95%;
+        padding: 20px;
+    }
+
+    /* 🔥 THIS WAS MISSING */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+
+    h2 {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .buttons {
+        text-align: center;
+    }
+}
+
 </style>
 </head>
 
 <body>
-
-<!-- NAVBAR -->
 <nav class="navbar">
     <div class="logo-section">
         <img src="{{ url_for('static', filename='logo.jpg') }}" class="logo">
         <h1 class="brand">RAJESH OPTICALS</h1>
     </div>
 
-    <ul class="nav-links">
+    <div class="menu-toggle" id="menuToggle">☰</div>
+
+    <ul class="nav-links" id="navMenu">
         <li onclick="location.href='/dashboard'">Home</li>
         <li onclick="location.href='/patients'">Patient Records</li>
         <li onclick="location.href='/active'">Activity Log</li>
         <li id="adminNav" onclick="location.href='/signup'">Admin</li>
         <li id="notifyNav" onclick="location.href='/notifications'">Notifications</li>
+        <li onclick="logout()">Logout</li>
     </ul>
 
     <button class="logout-btn" onclick="logout()">Logout</button>
 </nav>
 
-<!-- PAGE -->
-<div class="page">
 <div class="container">
-
 <h2>ADD NEW PATIENT</h2>
 
 <!-- BASIC -->
@@ -291,8 +386,7 @@ textarea {
         <div class="checkbox-dropdown-button" onclick="toggleCoatings()">Select Coatings</div>
         <div class="checkbox-list" id="coatingList">
             <div class="checkbox-grid">
-                <label><input type="checkbox"> Crizal</label>
-                        <label><input type="checkbox"> Prevencia</label>
+                <label><input type="checkbox"> Prevencia</label>
                         <label><input type="checkbox"> Blue Block</label>
                         <label><input type="checkbox"> S92</label>
                         <label><input type="checkbox"> PG</label>
@@ -336,38 +430,228 @@ textarea {
     <button class="cancel-btn" onclick="history.back()">Cancel</button>
     <button class="add-btn" onclick="savePatient()">Save Patient</button>
 </div>
-
-</div>
 </div>
 
 <script>
-/* UI + SESSION + LOGIC (UNCHANGED) */
-
-function toggleCoatings() {
-    const list = document.getElementById("coatingList");
-    list.style.display = list.style.display === "block" ? "none" : "block";
-}
-
+/* ===============================
+   AUTH + ROLE CHECK
+================================= */
 document.addEventListener("DOMContentLoaded", async () => {
-    const res = await fetch("/api/check_session", { credentials: "include" });
-    const data = await res.json();
+    // ---- Navbar toggle ----
+    const toggleBtn = document.getElementById("menuToggle");
+    const menu = document.getElementById("navMenu");
 
-    if (!data.logged_in) {
-        window.location.href = "/login";
-        return;
+    if (toggleBtn && menu) {
+        toggleBtn.addEventListener("click", () => {
+            menu.classList.toggle("show");
+        });
     }
 
-    if (data.role !== "admin") {
-        adminNav.style.display = "none";
-        notifyNav.style.display = "none";
+    // ---- Session check ----
+    try {
+        const res = await fetch("/api/check_session", {
+            credentials: "include"
+        });
+        const data = await res.json();
+
+        if (!data.logged_in) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (data.role !== "admin") {
+            const adminNav = document.getElementById("adminNav");
+            const notifyNav = document.getElementById("notifyNav");
+
+            if (adminNav) adminNav.style.display = "none";
+            if (notifyNav) notifyNav.style.display = "none";
+        }
+    } catch (err) {
+        window.location.href = "/login";
     }
 });
 
+/* ===============================
+   LOGOUT
+================================= */
 async function logout() {
-    await fetch("/api/logout", { method: "POST", credentials: "include" });
+    await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include"
+    });
     window.location.href = "/login";
 }
+
+/* ===============================
+   COATINGS DROPDOWN
+================================= */
+function toggleCoatings() {
+    const list = document.getElementById("coatingList");
+    if (!list) return;
+
+    list.style.display = list.style.display === "block" ? "none" : "block";
+}
+
+/* ===============================
+   PAYMENT AUTO CALC
+================================= */
+const totalInput = document.getElementById("total");
+const advanceInput = document.getElementById("advance");
+const remainingInput = document.getElementById("remaining");
+
+if (totalInput && advanceInput && remainingInput) {
+    [totalInput, advanceInput].forEach(el => {
+        el.addEventListener("input", () => {
+            const total = +totalInput.value || 0;
+            const advance = +advanceInput.value || 0;
+            remainingInput.value = Math.max(total - advance, 0);
+        });
+    });
+}
+
+/* ===============================
+   WHATSAPP HELPER
+================================= */
+function openWhatsApp(phone, message) {
+    if (!phone || !message) return;
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+}
+
+/* ===============================
+   EDIT MODE (LOAD PATIENT)
+================================= */
+const patientId = new URLSearchParams(window.location.search).get("id");
+
+if (patientId) {
+    fetch(`/patient/${patientId}`)
+        .then(res => res.json())
+        .then(p => {
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val ?? "";
+            };
+
+            setVal("branch", p.branch);
+            setVal("fullName", p.name);
+            setVal("age", p.age);
+            setVal("gender", p.gender);
+            setVal("phone", p.phone);
+            setVal("email", p.email);
+            setVal("address", p.address);
+
+            setVal("sph_od", p.sph_od);
+            setVal("cyl_od", p.cyl_od);
+            setVal("axis_od", p.axis_od);
+            setVal("add_od", p.add_od);
+
+            setVal("sph_os", p.sph_os);
+            setVal("cyl_os", p.cyl_os);
+            setVal("axis_os", p.axis_os);
+            setVal("add_os", p.add_os);
+
+            setVal("vision_od", p.vision_od);
+            setVal("vision_os", p.vision_os);
+            setVal("pd", p.pd);
+
+            setVal("frameType", p.frameType);
+            setVal("lensType", p.lensType);
+            setVal("contactLens", p.contactLens);
+
+            setVal("systemicHistory", p.systemicHistory);
+            setVal("ocularHistory", p.ocularHistory);
+            setVal("eyeConditions", p.eyeConditions);
+            setVal("notes", p.notes);
+            setVal("nextAppointment", p.nextAppointment);
+
+            setVal("total", p.total);
+            setVal("advance", p.advance);
+            setVal("remaining", p.remaining);
+
+            if (Array.isArray(p.coatings)) {
+                document.querySelectorAll("#coatingList input").forEach(c => {
+                    c.checked = p.coatings.includes(c.value);
+                });
+            }
+        });
+}
+
+/* ===============================
+   SAVE PATIENT
+================================= */
+async function savePatient() {
+    const getVal = id => document.getElementById(id)?.value || "";
+
+    const coatings = Array.from(
+        document.querySelectorAll("#coatingList input:checked")
+    ).map(c => c.value);
+
+    const payload = {
+        branch: getVal("branch"),
+        name: getVal("fullName"),
+        age: getVal("age"),
+        gender: getVal("gender"),
+        phone: getVal("phone"),
+        email: getVal("email"),
+        address: getVal("address"),
+
+        sph_od: getVal("sph_od"),
+        cyl_od: getVal("cyl_od"),
+        axis_od: getVal("axis_od"),
+        add_od: getVal("add_od"),
+
+        sph_os: getVal("sph_os"),
+        cyl_os: getVal("cyl_os"),
+        axis_os: getVal("axis_os"),
+        add_os: getVal("add_os"),
+
+        vision_od: getVal("vision_od"),
+        vision_os: getVal("vision_os"),
+        pd: getVal("pd"),
+
+        frameType: getVal("frameType"),
+        lensType: getVal("lensType"),
+        contactLens: getVal("contactLens"),
+
+        systemicHistory: getVal("systemicHistory"),
+        ocularHistory: getVal("ocularHistory"),
+        eyeConditions: getVal("eyeConditions"),
+        notes: getVal("notes"),
+        nextAppointment: getVal("nextAppointment"),
+
+        total: getVal("total"),
+        advance: getVal("advance"),
+        remaining: getVal("remaining"),
+
+        coatings
+    };
+
+    const res = await fetch(
+        patientId ? `/update-patient/${patientId}` : `/add-patient`,
+        {
+            method: patientId ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    const out = await res.json();
+
+    if (out.status === "success") {
+        if (out.whatsapp) {
+            openWhatsApp(out.whatsapp.phone, out.whatsapp.message);
+        }
+        alert("Patient saved successfully");
+        window.location.href = "/patients";
+    } else {
+        alert("Error: " + out.message);
+    }
+}
 </script>
+
+
 
 </body>
 </html>

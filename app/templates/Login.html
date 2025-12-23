@@ -7,69 +7,101 @@
 <link rel="icon" href="{{ url_for('static', filename='logo.jpg') }}">
 
 <style>
-    body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(to bottom right, #5583c1, #00C693);
-        font-family: Arial, sans-serif;
+/* -------------------------
+   BASE STYLES
+-------------------------- */
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom right, #5583c1, #00C693);
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    padding: 30px 25px;
+    border-radius: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.container img {
+    width: 120px;
+    max-width: 100%;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 26px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* -------------------------
+   INPUTS
+-------------------------- */
+.input-box,
+.dropdown {
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* -------------------------
+   BUTTON
+-------------------------- */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background-color: #b58600;
+    color: white;
+    font-size: 17px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.toggle-link {
+    margin-top: 15px;
+    display: block;
+    font-size: 14px;
+    color: #3719B2;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* -------------------------
+   SMALL DEVICES
+-------------------------- */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 22px;
     }
 
     .container {
-        width: 400px;
-        background: #fff;
-        padding: 30px;
-        border-radius: 35px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        text-align: center;
-    }
-
-    img {
-        width: 130px;
-        margin-bottom: 10px;
-    }
-
-    h1 {
-        font-size: 26px;
-        margin-bottom: 25px;
-        color: #333;
-    }
-
-       .input-box, .dropdown {
-        width: 90%;
-        padding: 14px;
-        margin: 12px 0;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        font-size: 16px;
+        padding: 25px 20px;
+        border-radius: 22px;
     }
 
     .btn {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        background-color: #b58600;
-        color: white;
-        font-size: 17px;
-        margin-top: 15px;
-        cursor: pointer;
+        font-size: 16px;
     }
-
-    .btn:hover {
-        opacity: 0.9;
-    }
-
-    .toggle-link {
-        margin-top: 15px;
-        display: block;
-        font-size: 14px;
-        color: #3719B2;
-        font-weight: bold;
-        cursor: pointer;
-    }
+}
 </style>
 </head>
 
@@ -91,7 +123,6 @@
 
         <button class="btn" onclick="loginUser()">Login</button>
 
-        <!-- Enable later -->
         <span class="toggle-link" style="display:none;">
             New User? Sign Up
         </span>
